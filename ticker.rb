@@ -1,12 +1,19 @@
 class Ticker
-  def self.tick
-    print "."
+  attr_reader :count
+
+  def initialize(count=0, opts={})
+    @count = count
+    @silent = opts.fetch(:silent, false)
+    @start_time = Time.now
+  end
+
+  def increment
+    print "." unless @silent
     @count += 1
   end
 
-  def self.start(&block)
-    @count = 0
-    instance_eval(&block)
-    @count
+  def uptime
+    @end_time = Time.now
+    (@end_time - @start_time).round(2)
   end
 end

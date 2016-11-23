@@ -10,12 +10,15 @@ module Cli
     result
   end
 
-  def self.list_or_file(message, items, opts={})
-    items += ["FILE..."] if opts[:include_file]
+  def self.list_options(message, items, opts={})
+    items += ["File..."] if opts[:include_file]
+    items += ["STDOUT"] if opts[:include_stdout]
 
     index = Ask.list message, items
-    if opts[:include_file] && index == items.size - 1
+    if opts[:include_file] && items[index] == "File..."
       { filename: (Ask.input "Filename", default: "sqs-cli.data") }
+    elsif opts[:include_stdout] && items[index] == "STDOUT"
+      { stream: $stdout }
     else
       { selected_item: items[index] }
     end
