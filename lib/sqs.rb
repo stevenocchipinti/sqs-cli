@@ -9,7 +9,8 @@ module SQS
     loop do
       resp = sqs.receive_message(
         queue_url: queue_url,
-        max_number_of_messages: 10
+        max_number_of_messages: 10,
+        visibility_timeout: 10
       )
       break if resp.messages.empty?
       block.call resp.messages
