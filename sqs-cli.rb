@@ -1,62 +1,39 @@
 require "aws-sdk"
-require "inquirer"
+require_relative "sqs"
+require_relative "cli"
 
-sqs = Aws::SQS::Client.new
+@sqs = SQS.new
 
-def wait_with_message(message)
-  print message
-  yield if block_given?
-  print "\r\e[K"
+all_queue_urls = Cli.wait_with_message("Fetching queues...") do
+  @sqs.all_queues
 end
 
+source = Cli.prompt "Source",
+  options: all_queue_urls,
+  include_file: false
 
-# operations = [
-#   "COPY all messages",
-#   "MOVE all messages",
-#   "DELETE all messages"
-# ]
+destination = Cli.prompt "Destination",
+  options: all_queue_urls,
+  include_file: false
 
-all_queue_urls = []
-wait_with_message("Fetching queues...") do
-  all_queue_urls = sqs.list_queues.queue_urls
-end
+delete = Cli.prompt "Delete message when processed?"
 
-source_queue_index = Ask.list "Source", all_queue_urls #+ ["FILE..."]
-source_queue_url = all_queue_urls[source_queue_index]
+if source_url = source[:selected_option]
 
-# operation = Ask.list "Operation", operations
+  count = 0
+  @sqs.read_message_batches(source_url) do |batch|
 
-destination_queue_index = Ask.list "Destination", all_queue_urls #+ ["FILE..."]
-destination_queue_url = all_queue_urls[destination_queue_index]
+    batch.each do |m|
+      count += 1
+      print "."
+    end
 
+    if destination_url = destination[:selected_option]
+      @sqs.send_message_batches(destination_url, batch)
+      @sqs.delete_message_batches(source_url, batch) if delete
+    end
 
-count = 0
-loop do
-  resp = sqs.receive_message(
-    queue_url: source_queue_url,
-    max_number_of_messages: 10
-  )
-
-  resp.messages.each do |m|
-    count += 1
-    print "."
   end
+  puts "\nProcessed #{count} messages"
 
-  break if resp.messages.empty?
-
-  sqs.send_message_batch(
-    queue_url: destination_queue_url,
-    entries: resp.messages.map { |m|
-      { id: m.message_id, message_body: m.body }
-    }
-  )
-
-  sqs.delete_message_batch(
-    queue_url: source_queue_url,
-    entries: resp.messages.map { |m|
-      { id: m.message_id, receipt_handle: m.receipt_handle }
-    }
-  )
 end
-
-puts "\nFound #{count} messages"
