@@ -2,6 +2,7 @@ require "aws-sdk"
 require "inquirer"
 require_relative "sqs"
 require_relative "cli"
+require_relative "ticker"
 
 all_queue_urls = Cli.wait_with_message("Fetching queues...") do
   SQS.all_queues
@@ -17,19 +18,15 @@ delete_when_done = Ask.confirm "Delete message when processed?"
 
 
 if source_url = source[:selected_item]
-  count = 0
-  SQS.read_message_batches(source_url) do |batch|
+  items_processed = Ticker.start do
+    SQS.read_message_batches(source_url) do |batch|
+      batch.each { tick }
 
-    batch.each do |m|
-      count += 1
-      print "."
+      if destination_url = destination[:selected_item]
+        SQS.send_message_batches(destination_url, batch)
+        SQS.delete_message_batches(source_url, batch) if delete_when_done
+      end
     end
-
-    if destination_url = destination[:selected_item]
-      SQS.send_message_batches(destination_url, batch)
-      SQS.delete_message_batches(source_url, batch) if delete_when_done
-    end
-
   end
-  puts "\nProcessed #{count} messages"
+  puts "\nProcessed #{items_processed} messages"
 end
