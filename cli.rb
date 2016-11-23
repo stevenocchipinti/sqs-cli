@@ -10,21 +10,14 @@ module Cli
     result
   end
 
-  def self.prompt(message, opts={})
-    using_file = opts.fetch(:include_file, false)
+  def self.list_or_file(message, items, opts={})
+    items += ["FILE..."] if opts[:include_file]
 
-    return Ask.confirm message unless opts.fetch(:options, false)
-
-    options = opts.fetch(:options, [])
-    options += ["FILE..."] if using_file
-
-    index = Ask.list message, options
-    if using_file && index == options.size - 1
-      {
-        filename: (Ask.input "Filename", default: "sqs-cli.data")
-      }
+    index = Ask.list message, items
+    if opts[:include_file] && index == items.size - 1
+      { filename: (Ask.input "Filename", default: "sqs-cli.data") }
     else
-      { selected_option: options[index] }
+      { selected_item: items[index] }
     end
   end
 end
