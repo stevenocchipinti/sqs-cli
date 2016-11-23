@@ -36,7 +36,7 @@ if source_url = source[:selected_item]
     elsif destination_file = destination[:filename]
       DataFile.new(destination_file).write_batch(batch)
     elsif stream = destination[:stream]
-      batch.each { |message| stream.puts message }
+      batch.each { |message| stream.puts message.body }
     end
 
     SQS.delete_message_batch(source_url, batch) if delete_when_done
