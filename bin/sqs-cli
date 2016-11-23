@@ -1,9 +1,10 @@
+#!/usr/bin/env ruby
 require "aws-sdk"
 require "inquirer"
-require_relative "sqs"
-require_relative "cli"
-require_relative "ticker"
-require_relative "data_file"
+require_relative "../lib/sqs"
+require_relative "../lib/cli"
+require_relative "../lib/ticker"
+require_relative "../lib/data_file"
 
 all_queue_urls = Cli.wait_with_message("Fetching queues...") do
   SQS.all_queues
