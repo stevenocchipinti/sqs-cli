@@ -1,3 +1,5 @@
+require "aws-sdk"
+
 module SQS
   extend self
 

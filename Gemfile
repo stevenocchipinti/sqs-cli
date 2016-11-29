@@ -1,5 +1,4 @@
-# frozen_string_literal: true
-source "https://rubygems.org"
+source 'https://rubygems.org'
 
-gem "aws-sdk"
-gem "inquirer"
+# Specify your gem's dependencies in sqs-cli.gemspec
+gemspec
