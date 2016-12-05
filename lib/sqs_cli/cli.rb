@@ -16,7 +16,7 @@ module Cli
 
     index = Ask.list message, items
     if opts[:include_file] && items[index] == "File..."
-      { filename: (Ask.input "Filename", default: "sqs-cli.data") }
+      { filename: (Ask.input "Filename", default: "sqs-cli.b64") }
     elsif opts[:include_stdout] && items[index] == "STDOUT"
       { stream: $stdout }
     else
