@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["dev@stevenocchipinti.com"]
 
   spec.summary       = "A simple CLI to move messages between SQS queues"
-  spec.homepage      = "https://github.com/stevenocchipinti/sqscli"
+  spec.homepage      = "https://github.com/stevenocchipinti/sqs-cli"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files -z`.split("\x0").reject do |f|
